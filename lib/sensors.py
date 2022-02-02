@@ -31,7 +31,6 @@ class Sensors:
             collector.start(i)
             while not collector.ready():
                 pass
-            self.logger.debug(f"{collector.result_prefix} - started")
         self.logger.debug("all collectors available, starting aggregator thread")
         self.sensor_thread.start()
 

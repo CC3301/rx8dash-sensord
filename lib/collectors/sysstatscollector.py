@@ -1,4 +1,3 @@
-import os
 import psutil
 import time
 
@@ -17,16 +16,14 @@ class SysStatsCollector(GenericCollector):
         self.logger.debug(f"collector started")
         while self._readystate:
             load1, load5, load15 = psutil.getloadavg()
-            cpu_usage = str((load15/os.cpu_count()) * 100) + "%"
             self.data = {
-                "cpu": {
-                    "usage": cpu_usage,
-                    "load1": load1,
-                    "load5": load5,
-                    "load15": load15
+                'cpu': {
+                    'load1': load1,
+                    'load5': load5,
+                    'oad15': load15
                 },
-                "mem": {
-                    "usage": psutil.virtual_memory()[2]
+                'mem': {
+                    'usage': psutil.virtual_memory()[2]
                 }
             }
             time.sleep(0.5)
