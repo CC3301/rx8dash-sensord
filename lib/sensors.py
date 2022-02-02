@@ -26,18 +26,29 @@ class Sensors:
 
     def start(self):
         self.__keep_running = True
+        self.logger.debug("Starting collectors")
         for i, collector in enumerate(self.collectors):
             collector.start(i)
+            while not collector.ready():
+                pass
+            self.logger.debug(f"{collector.result_prefix} - started")
+        self.logger.debug("all collectors available, starting aggregator thread")
         self.sensor_thread.start()
 
     def stop(self):
         self.__keep_running = False
         self.sensor_thread.join()
+        self.logger.debug("stopped SensorAggregator, waiting for collectors to exit")
+        for collector in self.collectors:
+            collector.stop()
+            collector.t.join()
+        self.logger.debug("SensorAggregator has exited")
 
     def fetch(self):
         return self.result
 
     def collect_and_process(self):
+        self.logger.debug("SensorAggregator started")
         while self.__keep_running:
             result = {}
             for collector in self.collectors:
