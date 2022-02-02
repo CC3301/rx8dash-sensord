@@ -43,8 +43,8 @@ class SensorDataProcessor:
         self.temperature_symbol = self.config.parser.get('application:units', 'temperaturesymbol')
         self.pressure_symbol = self.config.parser.get('application:units', 'pressuresymbol')
 
-        self.scale_factor_accel = self.config.parser.get('application:gyr:factors', 'scale_factor_accel')
-        self.scale_factor_gyro = self.config.parser.get('application:gyr:factors', 'scale_factor_gyro')
+        self.scale_factor_accel = float(self.config.parser.get('application:gyr:factors', 'scale_factor_accel'))
+        self.scale_factor_gyro = float(self.config.parser.get('application:gyr:factors', 'scale_factor_gyro'))
 
         self.logger.debug("Sensor data processor initialized")
 
@@ -154,17 +154,17 @@ class SensorDataProcessor:
                     "date": self.gpsdate
                 }
             },
-            "sys": {
-                "cpu": {
-                    "usage": str((data['sys']['cpu']['load15']/os.cpu_count()) * 100) + "%",
-                    "load1": data['sys']['cpu']['load1'],
-                    "load5": data['sys']['cpu']['load5'],
-                    "load15": data['sys']['cpu']['load15']
-                },
-                "mem": {
-                    "usage": str(data['sys']['mem']['usage']) + "%"
-                }
-            },
+            # "sys": {
+            #    "cpu": {
+            #        "usage": str((data['sys']['cpu']['load15']/os.cpu_count()) * 100) + "%",
+            #        "load1": data['sys']['cpu']['load1'],
+            #        "load5": data['sys']['cpu']['load5'],
+            #        "load15": data['sys']['cpu']['load15']
+            #    },
+            #    "mem": {
+            #        "usage": str(data['sys']['mem']['usage']) + "%"
+            #    }
+            # },
             "gyr": {
                 "accel": {
                     "x": self.accel_x,

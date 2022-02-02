@@ -14,8 +14,7 @@ class Sensors:
     def __init__(self, config):
         self.config = config
         self.logger = logging.getLogger(__name__)
-        self.collectors = [CANBusCollector(), HardwareSensorCollector(), GPSDataCollector(), GyroCollector(),
-                           SysStatsCollector()]
+        self.collectors = [CANBusCollector(), HardwareSensorCollector(), GPSDataCollector(), GyroCollector()]
         self.sdp = SensorDataProcessor(self.config)
         self.sensor_thread = threading.Thread(target=self.collect_and_process,
                                               name=self.__class__.__name__)
