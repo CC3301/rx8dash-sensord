@@ -31,8 +31,21 @@ class SensorDataProcessor:
         self.engine_water_temperature_needle_position = 0
         self.engine_water_temperature_status = "normal"
 
-        self.temperature_symbol = self.config.temperaturesymbol()
-        self.pressure_symbol = self.config.pressuresymbol()
+        self.accel_x = 0
+        self.accel_y = 0
+        self.accel_z = 0
+
+        self.gyro_x = 0
+        self.gyro_y = 0
+        self.gyro_z = 0
+
+        self.temperature_symbol = self.config.parser.get('application:units', 'temperaturesymbol')
+        self.pressure_symbol = self.config.parser.get('application:units', 'pressuresymbol')
+
+        self.scale_factor_accel = self.pressure_symbol = self.config.parser.get('application:gyr:factors',
+                                                                                'scale_factor_accel')
+        self.scale_factor_gyro = self.pressure_symbol = self.config.parser.get('application:gyr:factors',
+                                                                               'scale_factor_gyro')
 
         self.logger.debug("Sensor data processor initialized")
 
@@ -76,21 +89,24 @@ class SensorDataProcessor:
         :param data:
         :return:
         """
-        _engine_rpm = data['can']['engine']['rpm']
-        _engine_tps = data['can']['engine']['tps']
-
-        _vehicle_velocity = data['can']['vehicle']['velocity']
-
-        _gpstime = data['gps']['time']
 
         # extract human-readable formats from the units returned by the sensor aggregator
-        self.gpstime = datetime.fromtimestamp(_gpstime).strftime(self.config.timeformat())
-        self.gpsdate = datetime.fromtimestamp(_gpstime).strftime(self.config.dateformat())
+        self.gpstime = datetime.fromtimestamp(data['gps']['time']).strftime(self.config.timeformat())
+        self.gpsdate = datetime.fromtimestamp(data['gps']['time']).strftime(self.config.dateformat())
 
         # calculate gauges
         self._calculate_engine_oil_pressure(data['sen']['oil']['pressure'])
         self._calculate_engine_oil_temperature(data['sen']['oil']['temp'])
         self._calculate_engine_water_temperature(data['sen']['water']['temp'])
+
+        # get gyro and accelerometer data
+        self.accel_x = self._calculate_acceleration(data['gyr']['acc']['x'])
+        self.accel_y = self._calculate_acceleration(data['gyr']['acc']['y'])
+        self.accel_z = self._calculate_acceleration(data['gyr']['acc']['z'])
+
+        self.gyro_x = self._calculate_gyro(data['gyr']['gyro']['x'])
+        self.gyro_y = self._calculate_gyro(data['gyr']['gyro']['y'])
+        self.gyro_z = self._calculate_gyro(data['gyr']['gyro']['z'])
 
         result = {
             "sen": {
@@ -139,11 +155,38 @@ class SensorDataProcessor:
                     "date": self.gpsdate
                 }
             },
-            "sys": {},
-            "gyr": {},
+            "sys": {
+                "cpu": {
+                    "usage": data['sys']['cpu']['usage'],
+                    "load1": data['sys']['cpu']['load1'],
+                    "load5": data['sys']['cpu']['load5'],
+                    "load15": data['sys']['cpu']['load15']
+                },
+                "mem": {
+                    "usage": data['sys']['mem']['usage']
+                }
+            },
+            "gyr": {
+                "accel": {
+                    "x": self.accel_x,
+                    "y": self.accel_y,
+                    "z": self.accel_z
+                },
+                "gyro": {
+                    "x": self.gyro_x,
+                    "y": self.gyro_y,
+                    "z": self.gyro_z
+                }
+            }
         }
 
         return result
+
+    def _calculate_acceleration(self, value):
+        return value / self.scale_factor_accel
+
+    def _calculate_gyro(self, value):
+        return value / self.scale_factor_gyro
 
     def _calculate_gauge(self, value, max_value, min_value, high_value, low_value, gaugetype):
         """

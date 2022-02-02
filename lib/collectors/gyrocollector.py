@@ -1,4 +1,5 @@
 import smbus
+import time
 
 
 from lib.collectors.collector import GenericCollector
@@ -65,25 +66,17 @@ class GyroCollector(GenericCollector):
             gyro_y = self.__read_raw_data(self.GYRO_YOUT_H)
             gyro_z = self.__read_raw_data(self.GYRO_ZOUT_H)
 
-            # Full scale range +/- 250 degree/C as per sensitivity scale factor
-            ax = acc_x / 16384.0
-            ay = acc_y / 16384.0
-            az = acc_z / 16384.0
-
-            gx = gyro_x / 131.0
-            gy = gyro_y / 131.0
-            gz = gyro_z / 131.0
-
             self.data = {
-                "a": {
-                    "x": ax,
-                    "y": ay,
-                    "z": az
+                "acc": {
+                    "x": acc_x,
+                    "y": acc_y,
+                    "z": acc_z
                 },
-                "g": {
-                    "x": gx,
-                    "y": gy,
-                    "z": gz
+                "gyro": {
+                    "x": gyro_x,
+                    "y": gyro_y,
+                    "z": gyro_z
                 }
             }
+            time.sleep(0.5)
         self.logger.debug("readystate changed to false")

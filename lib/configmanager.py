@@ -20,12 +20,6 @@ class ConfigManager:
             sys.exit(2)
 
     # accessors
-    def loggingformat(self):
-        return self.parser.get('application:core', 'loggingformat')
-
-    def loglevel(self):
-        return self.parser.get('application:core', 'loglevel')
-
     def timeformat(self):
         return self.parser.get('application:units', 'timeformat')
 
@@ -37,21 +31,3 @@ class ConfigManager:
 
     def pressureunit(self):
         return self.parser.get('application:units', 'pressureunit')
-
-    def temperaturesymbol(self):
-        return self.parser.get('application:units', 'temperaturesymbol')
-
-    def pressuresymbol(self):
-        return self.parser.get('application:units', 'pressuresymbol')
-
-    def mainbackgroundcolor(self):
-        return self.parser.get('application:gui', 'background')
-
-    def mainfontcolor(self):
-        return self.parser.get('application:gui', 'fontcolor')
-
-    def windowwidth(self):
-        return self.parser.get('hardware:screen', 'width')
-
-    def windowheight(self):
-        return self.parser.get('hardware:screen', 'height')
