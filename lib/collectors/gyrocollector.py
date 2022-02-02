@@ -25,6 +25,21 @@ class GyroCollector(GenericCollector):
         self.device_addr = 0x68
         self.bus = smbus.SMBus(0)
 
+        # write to sample rate register
+        self.bus.write_byte_data(self.device_addr, self.SMPLRT_DIV, 7)
+
+        # Write to power management register
+        self.bus.write_byte_data(self.device_addr, self.PWR_MGMT_1, 1)
+
+        # Write to Configuration register
+        self.bus.write_byte_data(self.device_addr, self.CONFIG, 0)
+
+        # Write to Gyro configuration register
+        self.bus.write_byte_data(self.device_addr, self.GYRO_CONFIG, 24)
+
+        # Write to interrupt enable register
+        self.bus.write_byte_data(self.device_addr, self.INT_ENABLE, 1)
+
     def __read_raw_data(self, addr):
         high = self.bus.read_byte_data(self.device_addr, addr)
         low = self.bus.read_byte_data(self.device_addr, addr + 1)
