@@ -40,17 +40,16 @@ class Connection:
     def _serve(self):
         self.logger.info("sensord is waiting for connections")
         while self.__keep_running:
-            (clientsocket, address) = self.socket.accept()
-            self.logger.debug("Serving connection")
-            connected = True
-            while connected:
+            try:
+                message, addr = self.socket.recvfrom(0)
                 data = self.sensors.fetch()
                 if data is None:
                     continue
                 else:
                     try:
                         data += b"0" * (1024 - len(data))
-                        clientsocket.send(data)
+                        self.socket.sendto(data, addr)
                     except Exception as e:
                         self.logger.debug(f"Connection closed by client ({e})")
-                        connected = False
+            except:
+                pass
