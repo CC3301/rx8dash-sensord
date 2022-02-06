@@ -1,5 +1,9 @@
 import logging
+import queue
 import threading
+import json
+import time
+
 
 from lib.collectors.hardwaresensorcollector import HardwareSensorCollector
 from lib.collectors.canbuscollector import CANBusCollector
@@ -11,8 +15,9 @@ from lib.sensordataprocessor import SensorDataProcessor
 
 
 class Sensors:
-    def __init__(self, config):
+    def __init__(self, config, send_q):
         self.config = config
+        self.send_q = send_q
         self.logger = logging.getLogger(__name__)
         self.collectors = [CANBusCollector(), HardwareSensorCollector(), GPSDataCollector(), GyroCollector()]
         self.sdp = SensorDataProcessor(self.config)
@@ -20,8 +25,9 @@ class Sensors:
                                               name=self.__class__.__name__)
         self.__keep_running = False
 
-        self.previous_result = {}
-        self.result = {}
+        self.previous_result = None
+        self.current_result = None
+        self.data = None
 
     def start(self):
         self.__keep_running = True
@@ -43,7 +49,11 @@ class Sensors:
         self.logger.debug("SensorAggregator has exited")
 
     def fetch(self):
-        return self.result
+        if self.previous_result != self.current_result:
+            self.previous_result = self.current_result
+            return self.data
+        else:
+            return None
 
     def collect_and_process(self):
         self.logger.debug("SensorAggregator started")
@@ -52,6 +62,5 @@ class Sensors:
             for collector in self.collectors:
                 result[str(collector.result_prefix)] = collector.fetch()
 
-            if result != self.previous_result:
-                self.previous_result = result
-                self.result = self.sdp.process(result)
+            self.current_result = self.sdp.process(result)
+            self.data = json.dumps(self.current_result).encode('utf-8')
