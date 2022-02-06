@@ -30,7 +30,8 @@ class Connection:
         if self.socket:
             self.logger.warning("Already connected")
         else:
-            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            self.socket.setblocking(0)
             self.socket.bind((self.bind_addr, int(self.bind_port)))
 
     def __disconnect(self):
@@ -49,7 +50,7 @@ class Connection:
                 else:
                     try:
                         data += b"0" * (1024 - len(data))
-                        clientsocket.sendall(data)
+                        clientsocket.send(data)
                     except Exception as e:
                         self.logger.debug(f"Connection closed by client ({e})")
                         connected = False
